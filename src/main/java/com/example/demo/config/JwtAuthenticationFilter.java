@@ -24,7 +24,7 @@ import com.example.demo.service.JwtService;
 import io.jsonwebtoken.ExpiredJwtException;
 
 /**
- *
+ * Filtra todas las peticiones
  * @author Frael
  */
 @Component // Esta anotación marca la clase como un componente de Spring,
@@ -32,16 +32,8 @@ import io.jsonwebtoken.ExpiredJwtException;
 // la aplicación.
 // Esto permite que otras partes de la aplicación puedan inyectar instancias de
 // esta clase como un bean.
-@RequiredArgsConstructor // Esta anotación es parte del proyecto Lombok y genera automáticamente un
-                         // constructor con todos los campos
-// marcados como final. En este caso, el constructor se utiliza para inyectar
-// una instancia de JwtService en la clase.
-
-/**
- * Filtra todas las peticiones
- */
-public class JwtAuthenticationFilter extends OncePerRequestFilter { // extends de -> para crear filtros que se ejecutan
-                                                                    // una vez por cada solicitud HTTP entrante
+@RequiredArgsConstructor
+public class JwtAuthenticationFilter extends OncePerRequestFilter { // extends de -> para crear filtros que se ejecutan una vez por cada solicitud HTTP entrante
 
     // Este campo se inyectará automáticamente en el constructor de la clase debido
     // a la anotación @Component
@@ -49,17 +41,23 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter { // extends d
     //
     private final UserDetailsService userDetailsService;
 
-    // Este metodo se ejecutará una vez por cada solicitud HTTP.
+    /**
+     * Encargado de gestionar y filtrar los intentos de autenticación.
+     * Validando los JSONWebTokens presentes en las cabeceras HTTP de cada solicitud
+     * Si son validos permite que el usuario pase, otorgándole los permisos correctos. Si no, lo detiene en seco.
+     */
+    @SuppressWarnings("null")
     @Override
     protected void doFilterInternal(
             @NonNull HttpServletRequest request,
-            HttpServletResponse response,
-            FilterChain filterChain) throws ServletException, IOException {
+            @NonNull HttpServletResponse response,
+            @NonNull FilterChain filterChain) throws ServletException, IOException {
         // Se obtiene el encabezado "Authorization" de la solicitud HTTP.
         final String authHeader = request.getHeader("Authorization");
         final String jwt;
         final String userName;
-        // Si el header es nulo o no empieza con Barer
+        
+        // Si el header es nulo o no empieza con Barer retorna
         if (authHeader == null || !authHeader.startsWith("Bearer ")) {
             filterChain.doFilter(request, response);
             return;
@@ -69,7 +67,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter { // extends d
         jwt = authHeader.substring(7);
         // Se extrae el nombre de usuario (u otra información relevante) del token JWT
         userName = jwtService.extractUserName(jwt);
-        // Si el usuario no es nulo y no existe token de Authenticaction
+        // Si el usuario no es nulo y no existe token de Authenticaction en el Contexto de Seguridad de Spring
         if (userName != null && SecurityContextHolder.getContext().getAuthentication() == null) {
             //
             UserDetails userDetails = this.userDetailsService.loadUserByUsername(userName);
@@ -83,7 +81,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter { // extends d
                     //
                     authToken.setDetails(
                             new WebAuthenticationDetailsSource().buildDetails(request));
-                    // seteamos el token de Authentication
+                    // seteamos el token de Authentication en el Contexto de Seguridad de Spring
                     SecurityContextHolder.getContext().setAuthentication(authToken);
                 }
 
