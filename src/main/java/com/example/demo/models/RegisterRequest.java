@@ -5,6 +5,11 @@ import lombok.Builder;
 import lombok.Data;
 import lombok.NoArgsConstructor;
 
+/**
+ * DAO para el registro del usuario
+ * 
+ * @author Frael
+ */
 @Data
 @Builder
 @AllArgsConstructor
