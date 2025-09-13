@@ -16,33 +16,45 @@ import org.springframework.security.web.authentication.UsernamePasswordAuthentic
 import lombok.RequiredArgsConstructor;
 
 /**
- *
+ * Configuración de Spring Security
+ * 
  * @author Frael
  */
 @Configuration
 @EnableWebSecurity
 @RequiredArgsConstructor
 public class SecurityConfiguration {
-    
+
+    // Nuestra objeto para el filtro de autenticacion con JWT
     private final JwtAuthenticationFilter jwtAuthFilter;
 
     private final AuthenticationProvider authenticationProvider;
 
+    /**
+     * Este metodo es el encargado de establecer las reglas de acceso al sistema/API:
+     * - Asigna un proveedor de autenticación personalizado.
+     * - Asigna nuestro filtro para establecer conexion con las rutas
+     * 
+     * @apiNote Para trabajar con JWT es necesario establecer las politicas de sesiones en el sistema
+     * como STATELESS
+     * 
+     * @param http
+     * @return SecurityFilterChain
+     * @throws Exception
+     */
     @Bean
-    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception{
+    public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
         http
-            .csrf()
-            .disable() // Se desactiva CSRF ya que no es necesario en el contexto de API rest
-            .authorizeHttpRequests()
-            .requestMatchers("/api/authentication/**").permitAll()// Esto significa que estas rutas estarán disponibles sin autenticación.
-            .anyRequest()
-            .authenticated()
-            .and()
-            .sessionManagement()
-            .sessionCreationPolicy(SessionCreationPolicy.STATELESS) //no utilizará sesiones HTTP, ya que esta trabajando con tokens JWT y las solicitudes seran independientes de la sesión.
-            .and()
-            .authenticationProvider(authenticationProvider)
-            .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
+                .csrf(csrf -> csrf
+                        .disable()) // Se desactiva CSRF ya que no es necesario en el contexto de API rest
+                .authorizeHttpRequests(requests -> requests
+                        .requestMatchers("/api/authentication/**").permitAll()// Esto significa que estas rutas estarán disponibles sin autenticación.
+                        .anyRequest()
+                        .authenticated())
+                .sessionManagement(management -> management
+                        .sessionCreationPolicy(SessionCreationPolicy.STATELESS))
+                .authenticationProvider(authenticationProvider)
+                .addFilterBefore(jwtAuthFilter, UsernamePasswordAuthenticationFilter.class);
 
         return http.build();
     }
