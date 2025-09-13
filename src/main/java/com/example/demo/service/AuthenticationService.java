@@ -18,6 +18,11 @@ import com.example.demo.models.Role;
 
 import lombok.RequiredArgsConstructor;
 
+/**
+ * Servicio Authentication
+ * 
+ * @author Frael
+ */
 @Service
 @RequiredArgsConstructor
 public class AuthenticationService {
@@ -32,8 +37,9 @@ public class AuthenticationService {
 
     /**
      * Registra usuario y genera JWT Token
+     * 
      * @param request
-     * @return
+     * @return AuthenticationResponse
      */
     public AuthenticationResponse registerUser(RegisterRequest request){
         var user = User.builder()
@@ -50,9 +56,10 @@ public class AuthenticationService {
     }
 
     /**
+     * Para la autenticación del usuario al sistema
      * 
      * @param request
-     * @return
+     * @return AuthenticationResponse
      */
     public AuthenticationResponse authentication(AuthenticationRequest request){
         authenticationManager.authenticate(
