@@ -9,15 +9,16 @@ import java.util.Optional;
 import org.springframework.data.jpa.repository.JpaRepository;
 
 /**
- *
+ * Repositorio para la entidad User
+ * 
  * @author Frael
  */
 public interface UserRepository extends JpaRepository<User, Integer>{
     
     /**
-     * Retorno el usuario segun el usuario
-     * @param usuario
-     * @return 
+     * Retorno el Usuario segun el usuario name
+     * @param String usuario
+     * @return User
      */
     Optional<User> findByUsuario(String usuario);
     
